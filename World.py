@@ -9,7 +9,7 @@ class World:
 
     def run(self):
         while not self.done:
-            for unit in population:
+            for unit in self.population:
                 unit.take_action()
             
 
@@ -20,3 +20,4 @@ class World:
         population = []
         for i in range(100):
             population.append(Unit())
+        return population
