@@ -1,7 +1,7 @@
 from Unit import Unit
 
+
 class World:
-    
     def __init__(self):
         self.run_time = 0
         self.done = False
@@ -11,8 +11,6 @@ class World:
         while not self.done:
             for unit in self.population:
                 unit.take_action()
-            
-
 
             self.run_time += 1
 

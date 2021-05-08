@@ -1,17 +1,24 @@
-from tensorflow.keras.layers import Dense, Activation, Conv2D, Flatten, Dropout, BatchNormalization, MaxPooling2D
+from tensorflow.keras.layers import (
+    Dense,
+    Activation,
+    Conv2D,
+    Flatten,
+    Dropout,
+    BatchNormalization,
+    MaxPooling2D,
+)
 from tensorflow.keras.models import Sequential, load_model
 from tensorflow.keras.optimizers import Adam
 import numpy as np
+
 
 class ReplayBuffer(object):
     def __init__(self, max_size, input_shape):
         self.mem_size = max_size
         self.mem_cntr = 0
 
-        self.state_memory = np.zeros((self.mem_size, *input_shape),
-                                      dtype=np.float32)
-        self.new_state_memory = np.zeros((self.mem_size, *input_shape),
-                                          dtype=np.float32)
+        self.state_memory = np.zeros((self.mem_size, *input_shape), dtype=np.float32)
+        self.new_state_memory = np.zeros((self.mem_size, *input_shape), dtype=np.float32)
         self.action_memory = np.zeros(self.mem_size, dtype=np.int32)
         self.reward_memory = np.zeros(self.mem_size, dtype=np.float32)
         self.terminal_memory = np.zeros(self.mem_size, dtype=np.uint8)
@@ -37,22 +44,35 @@ class ReplayBuffer(object):
 
         return states, actions, rewards, states_, terminal
 
+
 def build_dqn(lr, n_actions, input_dims, fc1_dims, fc2_dims):
     model = Sequential()
     model.add(Flatten(input_shape=(*input_dims,)))
-    model.add(Dense(fc1_dims, activation='relu'))
-    #model.add(Dense(fc2_dims, activation='relu'))
-    model.add(Dense(n_actions, activation='softmax'))
+    model.add(Dense(fc1_dims, activation="relu"))
+    # model.add(Dense(fc2_dims, activation='relu'))
+    model.add(Dense(n_actions, activation="softmax"))
 
-    model.compile(optimizer=Adam(lr=lr), loss='mean_squared_error')
+    model.compile(optimizer=Adam(lr=lr), loss="mean_squared_error")
 
     return model
 
+
 class Brain(object):
-    def __init__(self, alpha, gamma, n_actions, epsilon, batch_size, replace,
-                 input_dims, eps_dec=0.996,  eps_min=0.01,
-                 mem_size=10000, q_eval_fname='q_eval.h5',
-                 q_target_fname='q_next.h5'):
+    def __init__(
+        self,
+        alpha,
+        gamma,
+        n_actions,
+        epsilon,
+        batch_size,
+        replace,
+        input_dims,
+        eps_dec=0.996,
+        eps_min=0.01,
+        mem_size=10000,
+        q_eval_fname="q_eval.h5",
+        q_target_fname="q_next.h5",
+    ):
         self.action_space = [i for i in range(n_actions)]
         self.gamma = gamma
         self.epsilon = epsilon
@@ -64,8 +84,8 @@ class Brain(object):
         self.q_eval_model_file = q_eval_fname
         self.learn_step = 0
         self.memory = ReplayBuffer(mem_size, input_dims)
-        self.q_eval = build_dqn(alpha, n_actions, input_dims, 32,128)
-        self.q_next = build_dqn(alpha, n_actions, input_dims, 32,128)
+        self.q_eval = build_dqn(alpha, n_actions, input_dims, 32, 128)
+        self.q_next = build_dqn(alpha, n_actions, input_dims, 32, 128)
 
     def replace_target_network(self):
         if self.replace is not None and self.learn_step % self.replace == 0:
@@ -87,8 +107,7 @@ class Brain(object):
 
     def learn(self):
         if self.memory.mem_cntr > self.batch_size:
-            state, action, reward, new_state, done = \
-                                    self.memory.sample_buffer(self.batch_size)
+            state, action, reward, new_state, done = self.memory.sample_buffer(self.batch_size)
 
             self.replace_target_network()
 
@@ -98,22 +117,23 @@ class Brain(object):
 
             q_target = q_eval[:]
             indices = np.arange(self.batch_size)
-            q_target[indices, action] = reward + self.gamma*np.max(q_next, axis=1)*(1 - done)
+            q_target[indices, action] = reward + self.gamma * np.max(q_next, axis=1) * (1 - done)
             self.q_eval.train_on_batch(state, q_target)
 
-            self.epsilon = self.epsilon - self.eps_dec \
-                           if self.epsilon > self.eps_min else self.eps_min
+            self.epsilon = (
+                self.epsilon - self.eps_dec if self.epsilon > self.eps_min else self.eps_min
+            )
             self.learn_step += 1
 
     def save_models(self):
         self.q_eval.save(self.q_eval_model_file)
         self.q_next.save(self.q_target_model_file)
-        print('... saving models ...')
+        print("... saving models ...")
 
     def load_models(self):
         self.q_eval = load_model(self.q_eval_model_file)
         self.q_nexdt = load_model(self.q_target_model_file)
-        print('... loading models ...')
+        print("... loading models ...")
 
     def get_weights(self):
         return self.q_next.get_weights()
