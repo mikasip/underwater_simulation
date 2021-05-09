@@ -1,11 +1,14 @@
 import numpy
 import tensorflow
+import pygame
 from Brain import Brain
 from settings import *
+from GameUnit import GameUnit
 
 
-class Unit:
-    def __init__(self, genes=numpy.random.normal(size=125)):
+class Fish(GameUnit):
+    def __init__(self, pos, sprite_group, width=20, height=20, genes=numpy.random.normal(size=125)):
+        GameUnit.__init__(self, pos, FISH_IMAGE_PATH, sprite_group, width, height)
         self.size = (numpy.tanh(genes[0]) + 1) * 25
         if self.size < 10:
             self.size = 10
@@ -39,6 +42,6 @@ class Unit:
             and new_pos[1] <= MAP_HEIGHT
             else self.pos
         )
-        self.energy -= 0.01
+        self.energy_left -= 0.01
 
         # todo: if self.collides(): act accordingly

@@ -1,5 +1,9 @@
-MAP_WIDTH = 300
-MAP_HEIGHT = 300
+GAME_NAME = "Underwater Simulation"
+MAP_WIDTH = 800
+MAP_HEIGHT = 600
 TOTAL_ENERGY = 1000
 SIM_TIME = 24 * 365 * 100  # simulation time in hours
 FPS = 60
+FISH_IMAGE_PATH = "fish/blue-fish.png"
+FOOD_IMAGE_PATH = "food/burger.png"
+BG_COLOR = "#ffffff"
