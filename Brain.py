@@ -19,7 +19,7 @@ class ReplayBuffer(object):
 
         self.state_memory = np.zeros((self.mem_size, *input_shape), dtype=np.float32)
         self.new_state_memory = np.zeros((self.mem_size, *input_shape), dtype=np.float32)
-        self.action_memory = np.zeros(self.mem_size, dtype=np.int32)
+        self.action_memory = np.zeros((self.mem_size, 2), dtype=np.int32)
         self.reward_memory = np.zeros(self.mem_size, dtype=np.float32)
         self.terminal_memory = np.zeros(self.mem_size, dtype=np.uint8)
 
@@ -50,7 +50,7 @@ def build_dqn(lr, n_actions, input_dims, fc1_dims, fc2_dims):
     model.add(Flatten(input_shape=(*input_dims,)))
     model.add(Dense(fc1_dims, activation="relu"))
     # model.add(Dense(fc2_dims, activation='relu'))
-    model.add(Dense(n_actions, activation="softmax"))
+    model.add(Dense(n_actions, activation="sigmoid"))
 
     model.compile(optimizer=Adam(lr=lr), loss="mean_squared_error")
 
@@ -97,13 +97,13 @@ class Brain(object):
 
     def choose_action(self, observation):
         if np.random.random() < self.epsilon:
-            action = np.random.choice(self.action_space)
+            actions = np.random.logistic(size=len(self.action_space))
         else:
             state = np.array([observation], copy=False, dtype=np.float32)
-            actions = self.q_eval.predict(state)
-            action = np.argmax(actions)
+            actions = self.q_eval(state)
+            # action = np.argmax(actions)
 
-        return action
+        return actions
 
     def learn(self):
         if self.memory.mem_cntr > self.batch_size:
