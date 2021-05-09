@@ -1,6 +1,9 @@
 {
   "python.formatting.provider": "black",
-  "python.formatting.blackArgs": ["--line-length", "100"],
+  "python.formatting.blackArgs": [
+    "--line-length",
+    "100"
+  ],
   "editor.formatOnSave": true,
-  "python.pythonPath": "/Users/ekkusipila/.pyenv/shims/python"
+  //"python.pythonPath": "/Users/ekkusipila/.pyenv/shims/python"
 }

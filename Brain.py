@@ -48,7 +48,7 @@ class ReplayBuffer(object):
 def build_dqn(lr, n_actions, input_dims, fc1_dims, fc2_dims):
     model = Sequential()
     model.add(Flatten(input_shape=(*input_dims,)))
-    model.add(Dense(fc1_dims, activation="relu"))
+    model.add(Dense(fc1_dims, activation="sigmoid"))
     # model.add(Dense(fc2_dims, activation='relu'))
     model.add(Dense(n_actions, activation="sigmoid"))
 
@@ -137,3 +137,18 @@ class Brain(object):
 
     def get_weights(self):
         return self.q_next.get_weights()
+
+    def set_weights(self, weights):
+        # Todo: change indexes to params i.e. self.n_weights_layer1 = input_size*layer1_size
+        weights_layer1 = [
+            np.array(np.reshape(weights[: 32 * 48], (48, 32))),
+            np.array(weights[32 * 48 : 32 * 48 + 32]),
+        ]
+        weights_layer2 = [
+            np.array(np.reshape(weights[32 * 48 + 32 : 32 * 48 + 32 + 32 * 3], (32, 3))),
+            np.array(weights[32 * 48 + 32 + 32 * 3 :]),
+        ]
+        self.q_eval.layers[1].set_weights(weights_layer1)
+        self.q_eval.layers[2].set_weights(weights_layer2)
+        self.q_next.layers[1].set_weights(weights_layer1)
+        self.q_next.layers[2].set_weights(weights_layer2)
