@@ -27,8 +27,8 @@ class World:
         for fish in self.population:
             inp = self.__input_for_pos(fish.pos, fish)
             energy_lost = fish.take_action(inp)
-            self.__check_collisions(fish, self.vegetarian_food)
-            self.energy -= energy_lost
+            self.__check_collisions(fish)
+            self.energy += energy_lost
         self.__generate_food()
 
     def __generate_food(self):
@@ -36,8 +36,8 @@ class World:
             Food(get_random_pos(), "vegetarian", 1, self.vegetarian_food)
             self.energy -= 1
 
-    def __check_collisions(self, fish, sprite_group):
-        hits = pygame.sprite.spritecollide(fish, sprite_group, True)
+    def __check_fish_collisions(self, fish):
+        hits = pygame.sprite.spritecollide(fish, self.vegetarian_food, True)
         fish.energy_left += len(hits)
         fish.prev_reward += len(hits)
 
@@ -47,6 +47,7 @@ class World:
         y = pos[1] - 100
         for i in range(4):
             for j in range(4):
+                # maybe todo: scale cell size with MAP_WIDTH and MAP_HEIGHT
                 rect = pygame.Rect(x + i * 50, y + j * 50, 50, 50)
                 input_vec.append(
                     1 if any(rect.colliderect(food.rect) for food in self.vegetarian_food) else 0
